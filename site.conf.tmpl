@@ -1,0 +1,57 @@
+server {
+    listen 80;
+    listen [::]:80;
+    server_name _;
+
+    # Web root is public/ ONLY — wp-config.php, vendor/, composer.*, utils/ all
+    # live one level above and can never be served.
+    root /var/www/public;
+    index index.php;
+
+    client_max_body_size 64m;   # nginx default is 1m — too small for media uploads
+
+    # --- security headers (TLS terminated at the Zerops L7 balancer) ---
+    add_header X-Content-Type-Options    "nosniff"                          always;
+    add_header X-Frame-Options           "SAMEORIGIN"                       always;
+    add_header Referrer-Policy           "strict-origin-when-cross-origin"  always;
+    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+
+    # --- compression ---
+    gzip            on;
+    gzip_vary       on;
+    gzip_comp_level 5;
+    gzip_min_length 256;
+    gzip_types text/plain text/css text/xml application/json application/javascript application/rss+xml image/svg+xml application/vnd.ms-fontobject application/x-font-ttf font/opentype;
+
+    # --- lock down noise & known attack surface ---
+    location ~ /\.              { deny all; }   # dotfiles (.git, .env, .htaccess, …)
+    location = /xmlrpc.php      { deny all; }
+    location = /wp/xmlrpc.php   { deny all; }   # brute-force amplification & pingback DDoS
+    location = /wp/wp-config.php { deny all; }
+    location ~* /wp-content/uploads/.*\.php$ { deny all; }   # never execute PHP in uploads
+
+    # --- static assets: long, immutable cache, served straight from disk ---
+    location ~* \.(?:css|js|mjs|jpe?g|png|gif|ico|svg|webp|avif|woff2?|ttf|otf|eot|mp4|webm|ogg|ogv|pdf)$ {
+        expires 30d;
+        add_header Cache-Control "public, max-age=2592000, immutable";
+        access_log off;
+        log_not_found off;
+        try_files $uri =404;
+    }
+
+    location / {
+        try_files $uri $uri/ /index.php?$args;
+    }
+
+    # --- PHP via php-fpm (socket injected by Zerops) ---
+    location ~ \.php$ {
+        include snippets/fastcgi-php.conf;
+        fastcgi_pass unix:{{.PhpSocket}};
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        fastcgi_read_timeout 120;
+        include fastcgi_params;
+    }
+
+    access_log syslog:server=unix:/dev/log,facility=local1 default_short;
+    error_log  syslog:server=unix:/dev/log,facility=local1;
+}

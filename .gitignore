@@ -1,0 +1,17 @@
+# Composer + WordPress core/plugins/themes are installed at build time.
+/vendor/
+/public/wp/
+/public/wp-content/plugins/*
+/public/wp-content/themes/*
+
+# Runtime/user data (media lives in object storage, not here).
+/public/wp-content/uploads/
+/public/wp-content/cache/
+/public/wp-content/upgrade/
+/public/wp-content/object-cache.php
+/public/wp-content/advanced-cache.php
+
+# Keep the committed placeholders and mu-plugins.
+!/public/wp-content/plugins/index.php
+!/public/wp-content/themes/index.php
+!/public/wp-content/mu-plugins/

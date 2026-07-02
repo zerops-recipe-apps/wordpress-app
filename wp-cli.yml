@@ -1,0 +1,2 @@
+# WP-CLI runs from the project root (/var/www); point it at the core dir.
+path: public/wp

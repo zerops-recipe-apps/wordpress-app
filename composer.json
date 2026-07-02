@@ -1,0 +1,41 @@
+{
+    "name": "zerops/wordpress",
+    "type": "project",
+    "license": "MIT",
+    "description": "Production-grade WordPress on Zerops: Composer-managed core, isolated public/ web root, Redis object cache, S3 media, hardened Nginx, real cron.",
+    "require": {
+        "php": ">=8.2",
+        "composer/installers": "^2.3",
+        "johnpbloch/wordpress": "^7.0",
+        "humanmade/s3-uploads": "^3.0.7",
+        "wpackagist-plugin/redis-cache": "^2.8",
+        "wpackagist-theme/twentytwentyfour": "^1"
+    },
+    "extra": {
+        "installer-paths": {
+            "public/wp-content/mu-plugins/{$name}/": ["type:wordpress-muplugin"],
+            "public/wp-content/plugins/{$name}/": ["type:wordpress-plugin"],
+            "public/wp-content/themes/{$name}/": ["type:wordpress-theme"]
+        },
+        "wordpress-install-dir": "public/wp"
+    },
+    "config": {
+        "vendor-dir": "vendor",
+        "optimize-autoloader": true,
+        "sort-packages": true,
+        "allow-plugins": {
+            "composer/installers": true,
+            "johnpbloch/wordpress-core-installer": true
+        },
+        "platform": {
+            "php": "8.4"
+        }
+    },
+    "repositories": [
+        {
+            "type": "composer",
+            "url": "https://wpackagist.org",
+            "only": ["wpackagist-plugin/*", "wpackagist-theme/*"]
+        }
+    ]
+}

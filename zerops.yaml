@@ -1,0 +1,112 @@
+zerops:
+  # ==========================================================================
+  #  base — shared runtime config, inherited by both dev and prod (extends)
+  # ==========================================================================
+  - setup: base
+    run:
+      base: php-nginx@8.4
+      os: ubuntu
+      siteConfigPath: site.conf.tmpl
+      envVariables:
+        # Public URL — self-URL variable so WordPress builds correct absolute links.
+        WORDPRESS_URL: ${zeropsSubdomain}
+        WORDPRESS_TABLE_PREFIX: wp_
+        # Database (MariaDB) — uses the platform-provisioned database, no manual CREATE.
+        WORDPRESS_DB_HOST: ${db_hostname}
+        WORDPRESS_DB_NAME: ${db_dbName}
+        WORDPRESS_DB_USER: ${db_user}
+        WORDPRESS_DB_PASSWORD: ${db_password}
+        # Media -> object storage (S3/MinIO); path-style wired in mu-plugins/s3.php.
+        WORDPRESS_STORAGE_URL: ${storage_apiUrl}
+        WORDPRESS_STORAGE_BUCKET: ${storage_bucketName}
+        WORDPRESS_STORAGE_KEY_ID: ${storage_accessKeyId}
+        WORDPRESS_STORAGE_ACCESS_KEY: ${storage_secretAccessKey}
+        # Object cache -> Valkey (AUTH mandatory on Zerops; phpredis ships in runtime).
+        WORDPRESS_REDIS_HOST: ${cache_hostname}
+        WORDPRESS_REDIS_PORT: ${cache_port}
+        WORDPRESS_REDIS_PASSWORD: ${cache_password}
+        # Email -> Mailpit by default; set SMTP_HOST_OVERRIDE for a real relay.
+        WORDPRESS_SMTP_HOST: ${SMTP_HOST_OVERRIDE:-mailpit}
+        WORDPRESS_SMTP_PORT: ${SMTP_PORT_OVERRIDE:-1025}
+      initCommands:
+        # First-ever boot: install WordPress + enable Redis object cache (once, ever).
+        - sudo -E -u zerops -- zsc execOnce wpinit --retryUntilSuccessful -- bash ./utils/initialize.sh
+        # Once per deployed version: DB schema upgrades, keep infra plugins + cache on.
+        - sudo -E -u zerops -- zsc execOnce ${appVersionId} --retryUntilSuccessful -- bash ./utils/upgrade.sh
+      healthCheck:
+        httpGet:
+          port: 80
+          path: /wp/wp-includes/images/blank.gif
+      # Real WordPress cron (WP pseudo-cron is disabled in wp-config.php).
+      crontab:
+        - command: cd /var/www && wp cron event run --due-now --quiet
+          timing: "*/5 * * * *"
+          allContainers: false
+
+  # ==========================================================================
+  #  prod — production build + hardened, timestamp-frozen OPcache
+  # ==========================================================================
+  - setup: prod
+    extends: base
+    build:
+      base: php@8.4
+      os: ubuntu
+      envVariables:
+        COMPOSER_ALLOW_SUPERUSER: 1
+      addToRunPrepare:
+        - utils/run-prepare.sh
+      buildCommands:
+        - composer install --no-dev --optimize-autoloader --classmap-authoritative --no-interaction
+        # Bake the Redis object-cache drop-in into the artifact, version-matched to the
+        # pinned plugin. It ships with every container and connects to the managed Valkey
+        # at runtime — no runtime "enable" step, no cold-start dance.
+        - cp public/wp-content/plugins/redis-cache/includes/object-cache.php public/wp-content/object-cache.php
+      deployFiles:
+        - ./
+      cache:
+        - vendor
+        - public/wp
+    deploy:
+      # Gate traffic on a static core asset (no DB dependency) → zero-downtime rollouts.
+      readinessCheck:
+        httpGet:
+          port: 80
+          path: /wp/wp-includes/images/blank.gif
+    run:
+      prepareCommands:
+        # addToRunPrepare copies utils/ into /home/zerops/ (path preserved).
+        - bash /home/zerops/utils/run-prepare.sh production
+      envVariables:
+        WORDPRESS_ENV: production
+        WORDPRESS_DEBUG: "false"
+        WORDPRESS_DEBUG_LOG: "false"
+        WORDPRESS_DEBUG_DISPLAY: "false"
+
+  # ==========================================================================
+  #  dev — full-source build for live editing over SSH (WP_DEBUG on)
+  # ==========================================================================
+  - setup: dev
+    extends: base
+    build:
+      base: php@8.4
+      os: ubuntu
+      envVariables:
+        COMPOSER_ALLOW_SUPERUSER: 1
+      addToRunPrepare:
+        - utils/run-prepare.sh
+      buildCommands:
+        - composer install --optimize-autoloader --no-interaction
+        - cp public/wp-content/plugins/redis-cache/includes/object-cache.php public/wp-content/object-cache.php
+      deployFiles:
+        - ./
+      cache:
+        - vendor
+        - public/wp
+    run:
+      prepareCommands:
+        - bash /home/zerops/utils/run-prepare.sh development
+      envVariables:
+        WORDPRESS_ENV: development
+        WORDPRESS_DEBUG: "true"
+        WORDPRESS_DEBUG_LOG: "true"
+        WORDPRESS_DEBUG_DISPLAY: "false"

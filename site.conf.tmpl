@@ -44,12 +44,18 @@ server {
     }
 
     # --- PHP via php-fpm (socket injected by Zerops) ---
+    # NB: inline the fastcgi-php directives rather than `include snippets/fastcgi-php.conf`
+    # — that snippet is a Debian/Ubuntu packaging convention and does not exist on Alpine
+    # nginx, so the include aborts nginx startup there. `fastcgi_params` ships on both.
     location ~ \.php$ {
-        include snippets/fastcgi-php.conf;
+        try_files $uri =404;
+        fastcgi_split_path_info ^(.+\.php)(/.+)$;
         fastcgi_pass unix:{{.PhpSocket}};
-        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
-        fastcgi_read_timeout 120;
+        fastcgi_index index.php;
         include fastcgi_params;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        fastcgi_param PATH_INFO $fastcgi_path_info;
+        fastcgi_read_timeout 120;
     }
 
     access_log syslog:server=unix:/dev/log,facility=local1 default_short;

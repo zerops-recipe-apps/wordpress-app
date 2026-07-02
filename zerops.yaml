@@ -5,7 +5,7 @@ zerops:
   - setup: base
     run:
       base: php-nginx@8.4
-      os: ubuntu
+      os: alpine
       siteConfigPath: site.conf.tmpl
       envVariables:
         # Public URL — self-URL variable so WordPress builds correct absolute links.
@@ -51,7 +51,7 @@ zerops:
     extends: base
     build:
       base: php@8.4
-      os: ubuntu
+      os: alpine
       envVariables:
         COMPOSER_ALLOW_SUPERUSER: 1
       addToRunPrepare:
@@ -92,7 +92,7 @@ zerops:
     extends: base
     build:
       base: php@8.4
-      os: ubuntu
+      os: alpine
       envVariables:
         COMPOSER_ALLOW_SUPERUSER: 1
       addToRunPrepare:

@@ -21,11 +21,19 @@ echo "${WP_CLI_SHA256}  /tmp/wp-cli.phar" | sha256sum -c -
 sudo install -m 0755 /tmp/wp-cli.phar /usr/local/bin/wp
 rm -f /tmp/wp-cli.phar
 
+# --- Alpine only: add the PHP extensions the lean musl image omits -----------
+# The Alpine php-nginx image bundles redis/mysqli/gd/intl/curl/... but NOT
+# opcache or exif. Ubuntu's image bundles both, so this block is a no-op there.
+if command -v apk >/dev/null 2>&1; then
+  sudo apk add --no-cache php84-opcache php84-exif >/dev/null
+fi
+
 # --- Production OPcache tuning -----------------------------------------------
 # opcache.* directives are dotted, so they cannot be set via Zerops' PHP_INI_*
 # env vars (those keep the underscore and PHP ignores them) — write a conf.d
-# drop-in instead.
-for dir in /etc/php/*/fpm/conf.d /etc/php/*/cli/conf.d; do
+# drop-in instead. The glob covers both the Debian/Ubuntu layout
+# (/etc/php/<ver>/{fpm,cli}/conf.d) and the Alpine layout (/etc/php<ver>/conf.d).
+for dir in /etc/php/*/fpm/conf.d /etc/php/*/cli/conf.d /etc/php*/conf.d; do
   [ -d "$dir" ] || continue
   sudo tee "$dir/zz-zerops-wordpress.ini" >/dev/null <<INI
 opcache.enable=1

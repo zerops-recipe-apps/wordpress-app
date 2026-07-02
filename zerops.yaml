@@ -25,9 +25,10 @@ zerops:
         WORDPRESS_REDIS_HOST: ${cache_hostname}
         WORDPRESS_REDIS_PORT: ${cache_port}
         WORDPRESS_REDIS_PASSWORD: ${cache_password}
-        # Email -> Mailpit by default; set SMTP_HOST_OVERRIDE for a real relay.
-        WORDPRESS_SMTP_HOST: ${SMTP_HOST_OVERRIDE:-mailpit}
-        WORDPRESS_SMTP_PORT: ${SMTP_PORT_OVERRIDE:-1025}
+        # Email: unset by default (WordPress falls back to PHP mail()). Set
+        # SMTP_HOST_OVERRIDE (+ port/auth) to route mail through a real SMTP relay.
+        WORDPRESS_SMTP_HOST: ${SMTP_HOST_OVERRIDE:-}
+        WORDPRESS_SMTP_PORT: ${SMTP_PORT_OVERRIDE:-587}
       initCommands:
         # First-ever boot: install WordPress + enable Redis object cache (once, ever).
         - sudo -E -u zerops -- zsc execOnce wpinit --retryUntilSuccessful -- bash ./utils/initialize.sh

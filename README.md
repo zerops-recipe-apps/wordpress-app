@@ -43,7 +43,4 @@ vendor/                  Composer deps              (git-ignored)
 - **Add a plugin/theme:** `composer require wpackagist-plugin/<slug>`, commit, push. The dashboard installer/editor are disabled (`DISALLOW_FILE_MODS`) because the filesystem is rebuilt on every deploy.
 - **Upgrade WordPress:** bump `johnpbloch/wordpress` in `composer.json`, `composer update`, push — `utils/upgrade.sh` runs `wp core update-db` on deploy.
 - **Config:** everything is read from the environment (see `wp-config.php`); there are no secrets in the repo.
-
-## How this compares to Bedrock
-
-Same Composer-managed core + isolated web root + env config, then wired natively to Zerops: managed MariaDB/Valkey/object-storage, a durable Redis object cache, S3 media, zero-downtime health/readiness, real cron and OPcache tuning — the pieces Bedrock leaves you to assemble.
+- **Email:** unset by default (WordPress uses PHP's `mail()`). Set `SMTP_HOST_OVERRIDE`/`SMTP_PORT_OVERRIDE` (and `WORDPRESS_SMTP_AUTH`/`WORDPRESS_SMTP_USER`/`WORDPRESS_SMTP_PASSWORD`) on the `app` service to route mail through a real SMTP relay.

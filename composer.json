@@ -19,6 +19,11 @@
         },
         "wordpress-install-dir": "public/wp"
     },
+    "scripts": {
+        "install-dropins": "@php bin/copy-object-cache-dropin.php",
+        "post-install-cmd": ["@install-dropins"],
+        "post-update-cmd": ["@install-dropins"]
+    },
     "config": {
         "vendor-dir": "vendor",
         "optimize-autoloader": true,

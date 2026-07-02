@@ -69,8 +69,14 @@ define( 'WP_CONTENT_URL', $home . '/wp-content' );
  *  Environment & debug (coerced booleans — "false" strings stay false)
  * -------------------------------------------------------------------------- */
 define( 'WP_ENVIRONMENT_TYPE', zerops_env( 'WORDPRESS_ENV', 'production' ) );
-define( 'WP_DEBUG',         zerops_env_bool( 'WORDPRESS_DEBUG', false ) );
-define( 'WP_DEBUG_LOG',     zerops_env_bool( 'WORDPRESS_DEBUG_LOG', false ) );
+// Debug flags default from the environment type — development turns WP_DEBUG and
+// WP_DEBUG_LOG on, production leaves everything off; display errors never default on
+// (they must not reach visitors). These are intentionally not baked into zerops.yaml
+// so an operator can flip any flag with a service env var + restart (no redeploy);
+// an explicit WORDPRESS_DEBUG* value always wins over the derived default.
+$wp_is_dev = ( WP_ENVIRONMENT_TYPE === 'development' );
+define( 'WP_DEBUG',         zerops_env_bool( 'WORDPRESS_DEBUG',         $wp_is_dev ) );
+define( 'WP_DEBUG_LOG',     zerops_env_bool( 'WORDPRESS_DEBUG_LOG',     $wp_is_dev ) );
 define( 'WP_DEBUG_DISPLAY', zerops_env_bool( 'WORDPRESS_DEBUG_DISPLAY', false ) );
 if ( ! WP_DEBUG_DISPLAY ) {
 	@ini_set( 'display_errors', '0' );   // never leak errors to visitors

@@ -57,11 +57,10 @@ zerops:
       addToRunPrepare:
         - utils/run-prepare.sh
       buildCommands:
+        # composer install runs the post-install hook (composer.json "scripts")
+        # that bakes the version-matched redis-cache object-cache.php drop-in into
+        # the artifact — it ships with every container, no runtime enable step.
         - composer install --no-dev --optimize-autoloader --classmap-authoritative --no-interaction
-        # Bake the Redis object-cache drop-in into the artifact, version-matched to the
-        # pinned plugin. It ships with every container and connects to the managed Valkey
-        # at runtime — no runtime "enable" step, no cold-start dance.
-        - cp public/wp-content/plugins/redis-cache/includes/object-cache.php public/wp-content/object-cache.php
       deployFiles:
         - ./
       cache:
@@ -78,10 +77,13 @@ zerops:
         # addToRunPrepare copies utils/ into /home/zerops/ (path preserved).
         - bash /home/zerops/utils/run-prepare.sh production
       envVariables:
+        # WORDPRESS_ENV drives the debug defaults in wp-config.php (production =
+        # all debug off). The WORDPRESS_DEBUG* flags are deliberately NOT set here:
+        # a run.envVariables key can't be overridden by a service env, so baking
+        # them would force a redeploy to toggle. Left unset, they default from this
+        # value and an operator can flip e.g. WORDPRESS_DEBUG_LOG via a service env
+        # + restart — no redeploy.
         WORDPRESS_ENV: production
-        WORDPRESS_DEBUG: "false"
-        WORDPRESS_DEBUG_LOG: "false"
-        WORDPRESS_DEBUG_DISPLAY: "false"
 
   # ==========================================================================
   #  dev — full-source build for live editing over SSH (WP_DEBUG on)
@@ -96,8 +98,8 @@ zerops:
       addToRunPrepare:
         - utils/run-prepare.sh
       buildCommands:
+        # composer install runs the post-install hook that bakes in the object-cache.php drop-in.
         - composer install --optimize-autoloader --no-interaction
-        - cp public/wp-content/plugins/redis-cache/includes/object-cache.php public/wp-content/object-cache.php
       deployFiles:
         - ./
       cache:
@@ -107,7 +109,6 @@ zerops:
       prepareCommands:
         - bash /home/zerops/utils/run-prepare.sh development
       envVariables:
+        # development => wp-config.php defaults WP_DEBUG + WP_DEBUG_LOG on (display
+        # stays off). Override any flag with a service env var + restart if needed.
         WORDPRESS_ENV: development
-        WORDPRESS_DEBUG: "true"
-        WORDPRESS_DEBUG_LOG: "true"
-        WORDPRESS_DEBUG_DISPLAY: "false"

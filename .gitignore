@@ -15,3 +15,11 @@
 !/public/wp-content/plugins/index.php
 !/public/wp-content/themes/index.php
 !/public/wp-content/mu-plugins/
+
+# --- Bring your own theme/plugin (not on Composer / wpackagist) ---
+# themes/ and plugins/ are Composer-managed and ignored above, so a custom theme,
+# child theme, or plugin you commit directly would be dropped from the build.
+# Un-ignore its folder (one line per item) and it ships in the artifact — no
+# `git add -f` needed, the negation makes it tracked normally. Examples:
+#   !/public/wp-content/themes/my-theme/
+#   !/public/wp-content/plugins/my-plugin/

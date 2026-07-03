@@ -37,7 +37,7 @@ if ! wp core is-installed 2>/dev/null; then
     --admin_password="${WORDPRESS_ADMIN_PASSWORD}" \
     --admin_email="${WORDPRESS_ADMIN_EMAIL}" \
     --skip-email
-  wp theme activate twentytwentyfour
+  wp theme activate twentytwentyfive
   wp rewrite structure '/%postname%/' --hard
 else
   echo "WordPress already installed — skipping core install."

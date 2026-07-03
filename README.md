@@ -40,7 +40,8 @@ vendor/                  Composer deps              (git-ignored)
 
 ## Working with it
 
-- **Add a plugin/theme:** `composer require wpackagist-plugin/<slug>`, commit, push. The dashboard installer/editor are disabled (`DISALLOW_FILE_MODS`) because the filesystem is rebuilt on every deploy.
+- **Add a plugin/theme (on Composer):** `composer require wpackagist-plugin/<slug>` (or `wpackagist-theme/<slug>`), commit, push. The dashboard installer/editor are disabled (`DISALLOW_FILE_MODS`) because the filesystem is rebuilt on every deploy.
+- **Add a *custom* theme/plugin (not on Composer):** commit it under `public/wp-content/themes/<name>/` (or `plugins/<name>/`) and un-ignore that folder in `.gitignore` — `!/public/wp-content/themes/<name>/`. Those dirs are Composer-managed and git-ignored by default, so without the negation your files are dropped from the build. Push, then activate over SSH: `wp theme activate <name>` (or `wp plugin activate <name>`). For a **child theme**, keep its parent as a Composer require so the `Template:` header resolves.
 - **Upgrade WordPress:** bump `johnpbloch/wordpress` in `composer.json`, `composer update`, push — `utils/upgrade.sh` runs `wp core update-db` on deploy.
 - **Config:** everything is read from the environment (see `wp-config.php`); there are no secrets in the repo.
 - **Email:** unset by default (WordPress uses PHP's `mail()`). Set `SMTP_HOST_OVERRIDE`/`SMTP_PORT_OVERRIDE` (and `WORDPRESS_SMTP_AUTH`/`WORDPRESS_SMTP_USER`/`WORDPRESS_SMTP_PASSWORD`) on the `app` service to route mail through a real SMTP relay.

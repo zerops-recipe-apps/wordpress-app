@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "90c81420c333842d861b2b69bacfe483",
+    "content-hash": "249f1c864291f21b1af140016ea31a3f",
     "packages": [
         {
             "name": "aws/aws-crt-php",
@@ -1517,22 +1517,22 @@
             "homepage": "https://wordpress.org/plugins/redis-cache/"
         },
         {
-            "name": "wpackagist-theme/twentytwentyfour",
+            "name": "wpackagist-theme/twentytwentyfive",
             "version": "1.5",
             "source": {
                 "type": "svn",
-                "url": "https://themes.svn.wordpress.org/twentytwentyfour/",
+                "url": "https://themes.svn.wordpress.org/twentytwentyfive/",
                 "reference": "1.5"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://downloads.wordpress.org/theme/twentytwentyfour.1.5.zip"
+                "url": "https://downloads.wordpress.org/theme/twentytwentyfive.1.5.zip"
             },
             "require": {
                 "composer/installers": "^1.0 || ^2.0"
             },
             "type": "wordpress-theme",
-            "homepage": "https://wordpress.org/themes/twentytwentyfour/"
+            "homepage": "https://wordpress.org/themes/twentytwentyfive/"
         }
     ],
     "packages-dev": [],

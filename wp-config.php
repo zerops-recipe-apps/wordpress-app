@@ -107,6 +107,11 @@ define( 'WP_REDIS_READ_TIMEOUT',    2 );
 define( 'WP_REDIS_RETRY_INTERVAL',  100 );  // ms
 define( 'WP_REDIS_GRACEFUL',        true );  // degrade to no-cache instead of fataling if Redis blips
 define( 'WP_REDIS_DISABLE_BANNERS', true );
+// object-cache.php is baked into the immutable artifact, version-matched to the
+// installed plugin (bin/copy-object-cache-dropin.php). Disable the plugin's
+// admin_init auto-update, which would otherwise try a shutdown filesystem write
+// into wp-content on the read-only/ephemeral container if it ever saw a mismatch.
+define( 'WP_REDIS_DISABLE_DROPIN_AUTOUPDATE', true );
 define( 'WP_CACHE_KEY_SALT',        zerops_env( 'WORDPRESS_REDIS_PREFIX', 'wp' ) . ':' );
 
 /* -------------------------------------------------------------------------- *

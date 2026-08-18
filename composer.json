@@ -1,13 +1,34 @@
 {
-    "name": "zerops/wordpress",
+    "name": "zerops/wordpress-app",
     "type": "project",
     "license": "MIT",
     "description": "Production-grade WordPress on Zerops: Composer-managed core, isolated public/ web root, Redis object cache, S3 media, hardened Nginx, real cron.",
+    "authors": [
+        {
+            "name": "Zerops",
+            "homepage": "https://zerops.io"
+        }
+    ],
+    "homepage": "https://github.com/zerops-recipe-apps/wordpress-app",
+    "support": {
+        "issues": "https://github.com/zerops-recipe-apps/wordpress-app/issues",
+        "source": "https://github.com/zerops-recipe-apps/wordpress-app"
+    },
+    "keywords": [
+        "wordpress",
+        "php",
+        "composer",
+        "zerops",
+        "mariadb",
+        "redis",
+        "s3"
+    ],
     "require": {
         "php": ">=8.2",
         "composer/installers": "^2.3",
-        "johnpbloch/wordpress": "^7.0",
+        "guzzlehttp/guzzle": "^7.15.2",
         "humanmade/s3-uploads": "^3.0.7",
+        "johnpbloch/wordpress": "^7.0",
         "wpackagist-plugin/redis-cache": "^2.8",
         "wpackagist-theme/twentytwentyfive": "^1"
     },
